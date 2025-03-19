@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Steam Game List</title>
+    <title>Game Library</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h2>My Steam Game List</h2>
-        <input type="text" id="gameInput" placeholder="Enter game name">
-        <button onclick="addGame()">Add Game</button>
-        <ul id="gameList"></ul>
-    </div>
+    <header>
+        <h1>My Game Collection</h1>
+    </header>
+
+    <main>
+        <div id="game-container" class="game-grid"></div>
+    </main>
+
     <script src="script.js"></script>
 </body>
 </html>
