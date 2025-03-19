@@ -31,23 +31,20 @@ document.addEventListener("DOMContentLoaded", function () {
         games.forEach(createGameCard);
     }
 
-    async function fetchSteamGameImage(gameName) {
+    async function fetchGameImage(gameName) {
         try {
-            const response = await fetch(`https://api.steampowered.com/ISteamApps/GetAppList/v2/`);
+            const response = await fetch(`http://localhost:3000/getGameImage?name=${encodeURIComponent(gameName)}`);
             const data = await response.json();
-            
-            const appList = data.applist.apps;
-            const game = appList.find(app => app.name.toLowerCase() === gameName.toLowerCase());
 
-            if (!game) {
-                alert("Game not found on Steam.");
+            if (data.error) {
+                alert(data.error);
                 return null;
             }
 
-            const appID = game.appid;
-            return `https://cdn.akamai.steamstatic.com/steam/apps/${appID}/header.jpg`;
+            return data.image;
         } catch (error) {
-            console.error("Error fetching game data:", error);
+            console.error("Error fetching game image:", error);
+            alert("Failed to fetch game data.");
             return null;
         }
     }
@@ -56,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const gameName = gameNameInput.value.trim();
         if (!gameName) return;
 
-        const gameImage = await fetchSteamGameImage(gameName);
+        const gameImage = await fetchGameImage(gameName);
         if (!gameImage) return;
 
         const newGame = { name: gameName, image: gameImage };

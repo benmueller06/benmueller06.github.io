@@ -1,47 +1,34 @@
-//import fetch from 'node-fetch';
-require("dotenv").config();
 const express = require("express");
-const fetch = require("node-fetch");
+const axios = require("axios");
 const cors = require("cors");
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = 4000;
 
 app.use(cors());
-app.use(express.json());
-app.get("/", (req, res) => {
-    res.send("Steam API Backend is Running!");
-});
 
-
-const STEAM_API_KEY = process.env.STEAM_API_KEY;
-
-// 🔍 Search for a game by name
-app.get("/search/:gameName", async (req, res) => {
-    const gameName = req.params.gameName.toLowerCase();
-    const appListUrl = `https://api.steampowered.com/ISteamApps/GetAppList/v2/`;
-
+// Endpoint to fetch game image from Steam
+app.get("/getGameImage", async (req, res) => {
     try {
-        const response = await fetch(appListUrl);
-        const data = await response.json();
-        const game = data.applist.apps.find(app => app.name.toLowerCase() === gameName);
+        const gameName = req.query.name;
+        if (!gameName) return res.status(400).json({ error: "Game name is required" });
 
-        if (game) {
-            const detailsUrl = `https://store.steampowered.com/api/appdetails?appids=${game.appid}`;
-            const detailsResponse = await fetch(detailsUrl);
-            const detailsData = await detailsResponse.json();
+        // Fetch the full list of Steam games
+        const steamResponse = await axios.get("https://api.steampowered.com/ISteamApps/GetAppList/v2/");
+        const gameList = steamResponse.data.applist.apps;
 
-            if (detailsData[game.appid].success) {
-                res.json(detailsData[game.appid].data);
-            } else {
-                res.status(404).json({ error: "Game details not found" });
-            }
-        } else {
-            res.status(404).json({ error: "Game not found on Steam" });
+        // Find the game ID
+        const game = gameList.find(g => g.name.toLowerCase() === gameName.toLowerCase());
+
+        if (!game) {
+            return res.status(404).json({ error: "Game not found" });
         }
+
+        const imageUrl = `https://cdn.akamai.steamstatic.com/steam/apps/${game.appid}/header.jpg`;
+        res.json({ name: game.name, image: imageUrl });
     } catch (error) {
-        console.error("Error fetching Steam data:", error);
-        res.status(500).json({ error: "Internal server error" });
+        console.error("Error fetching game data:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 });
 
