@@ -1,14 +1,16 @@
 document.addEventListener("DOMContentLoaded", function () {
     const gameContainer = document.getElementById("game-container");
+    const gameNameInput = document.getElementById("gameName");
+    const gameImageInput = document.getElementById("gameImage");
+    const addGameButton = document.getElementById("addGameButton");
 
-    // Sample game data (this can be fetched from an API later)
-    const games = [
-        { name: "Cyberpunk 2077", image: "https://cdn.akamai.steamstatic.com/steam/apps/1091500/header.jpg" },
-        { name: "Elden Ring", image: "https://cdn.akamai.steamstatic.com/steam/apps/1245620/header.jpg" },
-        { name: "Hogwarts Legacy", image: "https://cdn.akamai.steamstatic.com/steam/apps/990080/header.jpg" }
-    ];
+    // Load stored games from localStorage
+    let games = JSON.parse(localStorage.getItem("games")) || [];
 
-    // Function to create a game card
+    function saveGamesToLocalStorage() {
+        localStorage.setItem("games", JSON.stringify(games));
+    }
+
     function createGameCard(game) {
         const card = document.createElement("div");
         card.classList.add("game-card");
@@ -26,6 +28,29 @@ document.addEventListener("DOMContentLoaded", function () {
         gameContainer.appendChild(card);
     }
 
-    // Add games to the page
-    games.forEach(createGameCard);
+    // Display stored games on page load
+    function displayGames() {
+        gameContainer.innerHTML = ""; // Clear existing games
+        games.forEach(createGameCard);
+    }
+
+    // Add game to the list
+    addGameButton.addEventListener("click", function () {
+        const gameName = gameNameInput.value.trim();
+        const gameImage = gameImageInput.value.trim();
+
+        if (gameName && gameImage) {
+            const newGame = { name: gameName, image: gameImage };
+            games.push(newGame);
+            saveGamesToLocalStorage();
+            createGameCard(newGame);
+
+            // Clear input fields
+            gameNameInput.value = "";
+            gameImageInput.value = "";
+        }
+    });
+
+    // Initial display
+    displayGames();
 });
