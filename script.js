@@ -1,10 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
     const gameContainer = document.getElementById("game-container");
     const gameNameInput = document.getElementById("gameName");
-    const gameImageInput = document.getElementById("gameImage");
     const addGameButton = document.getElementById("addGameButton");
 
-    // Load stored games from localStorage
     let games = JSON.parse(localStorage.getItem("games")) || [];
 
     function saveGamesToLocalStorage() {
@@ -28,29 +26,46 @@ document.addEventListener("DOMContentLoaded", function () {
         gameContainer.appendChild(card);
     }
 
-    // Display stored games on page load
     function displayGames() {
-        gameContainer.innerHTML = ""; // Clear existing games
+        gameContainer.innerHTML = "";
         games.forEach(createGameCard);
     }
 
-    // Add game to the list
-    addGameButton.addEventListener("click", function () {
-        const gameName = gameNameInput.value.trim();
-        const gameImage = gameImageInput.value.trim();
+    async function fetchSteamGameImage(gameName) {
+        try {
+            const response = await fetch(`https://api.steampowered.com/ISteamApps/GetAppList/v2/`);
+            const data = await response.json();
+            
+            const appList = data.applist.apps;
+            const game = appList.find(app => app.name.toLowerCase() === gameName.toLowerCase());
 
-        if (gameName && gameImage) {
-            const newGame = { name: gameName, image: gameImage };
-            games.push(newGame);
-            saveGamesToLocalStorage();
-            createGameCard(newGame);
+            if (!game) {
+                alert("Game not found on Steam.");
+                return null;
+            }
 
-            // Clear input fields
-            gameNameInput.value = "";
-            gameImageInput.value = "";
+            const appID = game.appid;
+            return `https://cdn.akamai.steamstatic.com/steam/apps/${appID}/header.jpg`;
+        } catch (error) {
+            console.error("Error fetching game data:", error);
+            return null;
         }
+    }
+
+    addGameButton.addEventListener("click", async function () {
+        const gameName = gameNameInput.value.trim();
+        if (!gameName) return;
+
+        const gameImage = await fetchSteamGameImage(gameName);
+        if (!gameImage) return;
+
+        const newGame = { name: gameName, image: gameImage };
+        games.push(newGame);
+        saveGamesToLocalStorage();
+        createGameCard(newGame);
+
+        gameNameInput.value = "";
     });
 
-    // Initial display
     displayGames();
 });
