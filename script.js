@@ -8,7 +8,7 @@ function addGame() {
 }
 
 function fetchGameDetails(gameName) {
-    const steamAPIKey = "YOUR_STEAM_API_KEY";  // Replace with your Steam API key
+    const steamAPIKey = "8EC8E0A54EB4C1D1F2CEBE1F27F9B8B6";  // Replace with your Steam API key
     const searchUrl = `https://api.steampowered.com/ISteamApps/GetAppList/v2/`;
 
     fetch(searchUrl)
