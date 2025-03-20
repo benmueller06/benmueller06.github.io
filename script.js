@@ -78,12 +78,24 @@ document.addEventListener("DOMContentLoaded", function () {
                 data.suggestions.forEach(game => {
                     const suggestion = document.createElement("div");
                     suggestion.classList.add("suggestion");
-                    suggestion.textContent = game;
+
+                    const img = document.createElement("img");
+                    img.src = game.image;
+                    img.alt = game.name;
+                    img.classList.add("suggestion-image");
+
+                    const text = document.createElement("span");
+                    text.textContent = game.name;
+
+                    suggestion.appendChild(img);
+                    suggestion.appendChild(text);
+
                     suggestion.addEventListener("click", () => {
-                        gameNameInput.value = game;
+                        gameNameInput.value = game.name;
                         suggestionsContainer.innerHTML = "";
                         suggestionsContainer.style.display = "none"; // Hide after selection
                     });
+
                     suggestionsContainer.appendChild(suggestion);
                 });
             } else {
@@ -100,9 +112,17 @@ document.addEventListener("DOMContentLoaded", function () {
         displayGames();
     }
 
-    gameNameInput.addEventListener("input", () => {
+    function debounce(func, wait) {
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+
+    gameNameInput.addEventListener("input", debounce(() => {
         fetchGameSuggestions(gameNameInput.value);
-    });
+    }, 300));
 
     addGameButton.addEventListener("click", async function () {
         const gameName = gameNameInput.value.trim();

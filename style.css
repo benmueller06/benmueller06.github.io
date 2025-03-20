@@ -55,16 +55,27 @@ header {
     overflow-y: auto;
     display: none;
     z-index: 1000;
+    padding: 5px 0;
 }
 
 .suggestion {
+    display: flex;
+    align-items: center;
     padding: 10px;
     cursor: pointer;
     border-bottom: 1px solid #555;
+    color: white;
 }
 
 .suggestion:hover {
     background: #555;
+}
+
+.suggestion-image {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+    border-radius: 5px;
 }
 
 .game-grid {
