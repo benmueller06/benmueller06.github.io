@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function fetchGameImage(gameName) {
         try {
-            const response = await fetch(`http://localhost:3000/getGameImage?name=${encodeURIComponent(gameName)}`);
+            const response = await fetch(`http://localhost:4000/getGameImage?name=${encodeURIComponent(gameName)}`);
             const data = await response.json();
 
             if (data.error) {
