@@ -2,6 +2,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const gameContainer = document.getElementById("game-container");
     const gameNameInput = document.getElementById("gameName");
     const addGameButton = document.getElementById("addGameButton");
+    const suggestionsContainer = document.createElement("div");
+    suggestionsContainer.id = "suggestions";
+    gameNameInput.parentNode.appendChild(suggestionsContainer);
 
     let games = JSON.parse(localStorage.getItem("games")) || [];
 
@@ -21,8 +24,14 @@ document.addEventListener("DOMContentLoaded", function () {
         title.classList.add("game-title");
         title.textContent = game.name;
 
+        const removeButton = document.createElement("button");
+        removeButton.textContent = "Remove";
+        removeButton.classList.add("remove-button");
+        removeButton.addEventListener("click", () => removeGame(game.name));
+
         card.appendChild(img);
         card.appendChild(title);
+        card.appendChild(removeButton);
         gameContainer.appendChild(card);
     }
 
@@ -49,6 +58,42 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    async function fetchGameSuggestions(query) {
+        if (!query) {
+            suggestionsContainer.innerHTML = "";
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:4000/getGameSuggestions?query=${encodeURIComponent(query)}`);
+            const data = await response.json();
+            
+            suggestionsContainer.innerHTML = "";
+            data.suggestions.forEach(game => {
+                const suggestion = document.createElement("div");
+                suggestion.classList.add("suggestion");
+                suggestion.textContent = game;
+                suggestion.addEventListener("click", () => {
+                    gameNameInput.value = game;
+                    suggestionsContainer.innerHTML = "";
+                });
+                suggestionsContainer.appendChild(suggestion);
+            });
+        } catch (error) {
+            console.error("Error fetching game suggestions:", error);
+        }
+    }
+
+    function removeGame(gameName) {
+        games = games.filter(game => game.name !== gameName);
+        saveGamesToLocalStorage();
+        displayGames();
+    }
+
+    gameNameInput.addEventListener("input", () => {
+        fetchGameSuggestions(gameNameInput.value);
+    });
+
     addGameButton.addEventListener("click", async function () {
         const gameName = gameNameInput.value.trim();
         if (!gameName) return;
@@ -62,6 +107,7 @@ document.addEventListener("DOMContentLoaded", function () {
         createGameCard(newGame);
 
         gameNameInput.value = "";
+        suggestionsContainer.innerHTML = "";
     });
 
     displayGames();
