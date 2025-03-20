@@ -32,6 +32,28 @@ app.get("/getGameImage", async (req, res) => {
     }
 });
 
+// Endpoint to get game suggestions
+app.get("/getGameSuggestions", async (req, res) => {
+    try {
+        const query = req.query.query;
+        if (!query) return res.status(400).json({ error: "Query is required" });
+
+        // Fetch the full list of Steam games
+        const steamResponse = await axios.get("https://api.steampowered.com/ISteamApps/GetAppList/v2/");
+        const gameList = steamResponse.data.applist.apps;
+
+        // Filter games based on the query
+        const suggestions = gameList
+            .filter(game => game.name.toLowerCase().includes(query.toLowerCase()))
+            .map(game => game.name);
+
+        res.json({ suggestions });
+    } catch (error) {
+        console.error("Error fetching game suggestions:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });

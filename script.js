@@ -2,9 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const gameContainer = document.getElementById("game-container");
     const gameNameInput = document.getElementById("gameName");
     const addGameButton = document.getElementById("addGameButton");
-    const suggestionsContainer = document.createElement("div");
-    suggestionsContainer.id = "suggestions";
-    gameNameInput.parentNode.appendChild(suggestionsContainer);
+    const suggestionsContainer = document.getElementById("suggestions");
 
     let games = JSON.parse(localStorage.getItem("games")) || [];
 
@@ -61,24 +59,36 @@ document.addEventListener("DOMContentLoaded", function () {
     async function fetchGameSuggestions(query) {
         if (!query) {
             suggestionsContainer.innerHTML = "";
+            suggestionsContainer.style.display = "none"; // Hide when no query
             return;
         }
 
         try {
             const response = await fetch(`http://localhost:4000/getGameSuggestions?query=${encodeURIComponent(query)}`);
+            if (!response.ok) {
+                console.error("Error fetching game suggestions:", response.statusText);
+                return;
+            }
+
             const data = await response.json();
-            
+
             suggestionsContainer.innerHTML = "";
-            data.suggestions.forEach(game => {
-                const suggestion = document.createElement("div");
-                suggestion.classList.add("suggestion");
-                suggestion.textContent = game;
-                suggestion.addEventListener("click", () => {
-                    gameNameInput.value = game;
-                    suggestionsContainer.innerHTML = "";
+            if (data.suggestions.length > 0) {
+                suggestionsContainer.style.display = "block"; // Show when suggestions exist
+                data.suggestions.forEach(game => {
+                    const suggestion = document.createElement("div");
+                    suggestion.classList.add("suggestion");
+                    suggestion.textContent = game;
+                    suggestion.addEventListener("click", () => {
+                        gameNameInput.value = game;
+                        suggestionsContainer.innerHTML = "";
+                        suggestionsContainer.style.display = "none"; // Hide after selection
+                    });
+                    suggestionsContainer.appendChild(suggestion);
                 });
-                suggestionsContainer.appendChild(suggestion);
-            });
+            } else {
+                suggestionsContainer.style.display = "none"; // Hide if no suggestions
+            }
         } catch (error) {
             console.error("Error fetching game suggestions:", error);
         }
@@ -108,6 +118,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         gameNameInput.value = "";
         suggestionsContainer.innerHTML = "";
+        suggestionsContainer.style.display = "none"; // Hide dropdown
     });
 
     displayGames();
